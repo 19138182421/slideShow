@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轮播图</title>
+    <link rel="stylesheet" href="../css/reset.css">
+</head>
+
+<style>
+    /* 清除样式 */
+    * {
+
+        margin: 0;
+        padding: 0;
+    }
+
+    a {
+        list-style: none;
+    }
+
+    ul {
+        list-style: none;
+    }
+
+    .clearfix::before,
+    .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+
+    /* 设置轮播图整体位置及大小 */
+    .banner {
+        /* background-color: #bfa; */
+        position: relative;
+        width: 1226px;
+        height: 460px;
+        margin: 30px auto 0;
+    }
+
+    .banner li {
+        position: absolute;
+    }
+
+    /*设置图片大小*/
+    .banner .img-list li {
+        width: 100%;
+        vertical-align: top;
+        /*垂直方向*/
+        opacity: 0;
+        transition-duration: 1500ms;
+    }
+
+    /*设置动画样式*/
+    .banner .img-list li.item {
+        opacity: 1;
+        z-index: 1;
+    }
+
+    .button a {
+        width: 41px;
+        height: 69px;
+        /* background-color: red; */
+        background-image: url("../练习截图/轮播图/icon-slides.png");
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        margin: auto 0;
+        z-index: 10;
+    }
+
+    .button .prev {
+        /* left: 234px; */
+        left: 0;
+        background-position: -84px 0;
+    }
+
+    .button .next {
+        right: 0;
+        background-position: -125px 0;
+    }
+
+    .button .prev:hover {
+
+        background-position: 0 0;
+    }
+
+    .button .next:hover {
+        right: 0;
+        background-position: -42px 0;
+    }
+
+    .pointer {
+        /* background-color: #bfa; */
+        position: absolute;
+        bottom: 22px;
+        right: 20px;
+        z-index: 10;
+    }
+
+    .pointer a {
+        float: left;
+        width: 6px;
+        height: 6px;
+        background-color: rgba(0, 0, 0, 0.4);
+        border: 2px solid hsla(0, 0%, 100%, .3);
+        border-radius: 50%;
+        margin: 0 4px 0 4px;
+
+    }
+
+    .pointer a:hover {
+        border-color: rgba(0, 0, 0, .4);
+        background: hsla(0, 0%, 100%, .4);
+    }
+
+    .pointer a.active {
+        border-color: rgba(0, 0, 0, .4);
+        background: hsla(0, 0%, 100%, .4);
+    }
+</style>
+
+<body>
+    <div id="slideshow">
+
+        <div id="banner" class="banner">
+            <!-- 轮播图主体列表 -->
+            <ul class="img-list">
+                <li data-index="0" class="item"><a href="#"><img src="../练习截图/轮播图/1.webp" alt=""></a></li>
+                <li data-index="1"><a href="www.baidu.com"><img src="../练习截图/轮播图/2.webp" alt=""></a></li>
+                <li data-index="2"><a href="www.bilibili.com"><img src="../练习截图/轮播图/3.webp" alt=""></a></li>
+                <li data-index="3"><a href="#"><img src="../练习截图/轮播图/4.webp" alt=""></a></li>
+            </ul>
+            <!-- 设置左右按钮  使用精灵图 -->
+            <div class="button">
+                <a href="#" class="prev"></a>
+                <a href="#" class="next"></a>
+            </div>
+
+            <!-- 设置圆点 -->
+            <div class="pointer">
+                <a href="#" data-n="0" class="circle active"></a>
+                <a href="#" data-n="1" class="circle"></a>
+                <a href="#" data-n="2" class="circle"></a>
+                <a href="#" data-n="3" class="circle"></a>
+            </div>
+
+        </div>
+
+    </div>
+    <script>
+        /*获取ul元素 以便对li元素进行操作*/
+        let oImg = document.getElementsByTagName("li");  //是一个数组
+        // console.log(oImg);
+
+        /*获取左右按钮*/
+        let oLeft = document.querySelector(".prev");
+        let oRight = document.querySelector(".next");
+
+        /*获取圆点列表与其父元素（方便使用事件代理）*/
+        let circle = document.querySelectorAll(".circle");
+        let pointer = document.querySelector(".pointer");
+
+        //设置图片索引
+        let index = 0;
+
+        //自动播放
+        function autoPlay() {
+            index++;
+            if (index === 4) {
+                index = 0;
+            }
+            for (let i = 0; i < oImg.length; i++) {
+                oImg[i].classList.remove("item");
+            }
+            oImg[index].classList.add("item");
+            setHighlight();
+        }
+        
+        //节流优化  设置节流函数
+        function throttle(func, delay) {
+            //设置内部变量节流锁
+            let lock = true;
+            //返回执行函数
+            return function () {
+                //判断节流锁lock  如果为true 定时执行并开锁
+                if (lock) {
+                    //定时执行业务逻辑函数并开锁  
+                    setTimeout(() => {
+                        func.call(this);
+                        lock = true;
+                    },delay);
+                }
+                lock = false;
+
+            }
+        }
+        //为右按钮添加事件监听 并调用节流方法
+        oRight.addEventListener("click", throttle(autoPlay,500));
+
+        //为左按钮添加事件监听
+        oLeft.addEventListener("click", () => {
+            if (!lock) return;
+            index--;
+            if (index < 0) {
+                index = 3;
+            }
+            for (let i = 0; i < oImg.length; i++) {
+                oImg[i].classList.remove("item");
+            }
+            oImg[index].classList.add("item");
+            setHighlight();
+
+            lock = false;
+            //定时打开锁
+            setTimeout(() => {
+                lock = true;
+            }, 500);
+
+        });
+
+        //设置圆点高亮
+        function setHighlight() {
+            for (let i = 0; i < circle.length; i++) {
+                if (index === i) {
+                    circle[i].classList.add("active");
+                } else {
+                    circle[i].classList.remove("active");
+                }
+            }
+        }
+
+        //使用事件代理来判断小圆点高亮
+        pointer.addEventListener("click", (e) => {
+            //e代表  [object PointerEvent]  事件对象  
+            if (e.target.nodeName.toLowerCase() === "a") {
+                const n = Number(e.target.getAttribute("data-n")); //获取当前元素的自定义属性中的值
+                index = n;
+                for (let i = 0; i < oImg.length; i++) {
+                    oImg[i].classList.remove("item");
+                }
+                oImg[index].classList.add("item");
+                setHighlight();
+
+            }
+        });
+
+        //自动轮播
+        let autoShow = setInterval(autoPlay, 3000);
+
+        //移入鼠标停止轮播
+        //获取整体banner
+        oBanner = document.getElementById("banner");
+
+        //添加事件监听函数
+        oBanner.addEventListener("mouseenter", () => {
+            clearInterval(autoShow);
+        });
+
+        oBanner.addEventListener("mouseleave", () => {
+            //重新添加自动播放时  需要设表先关  再设置定时函数
+            clearInterval(autoShow);
+            autoShow = setInterval(autoPlay, 3000);
+        });
+
+
+    </script>
+</body>
+
+</html>
